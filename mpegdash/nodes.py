@@ -299,6 +299,7 @@ class Event(XMLNode):
         self.presentation_time = None                         # xs:unsignedLong
         self.duration = None                                  # xs:unsignedLong
         self.id = None                                        # xs:unsignedInt
+        self.signal = None
 
     def parse(self, xmlnode):
         self.event_value = parse_node_value(xmlnode, str)
@@ -306,6 +307,7 @@ class Event(XMLNode):
         self.presentation_time = parse_attr_value(xmlnode, 'presentationTime', int)
         self.duration = parse_attr_value(xmlnode, 'duration', int)
         self.id = parse_attr_value(xmlnode, 'id', int)
+        self.signal = parse_child_nodes(xmlnode, 'scte35:Signal', Signal)
 
     def write(self, xmlnode):
         write_node_value(xmlnode, self.event_value)
@@ -313,6 +315,7 @@ class Event(XMLNode):
         write_attr_value(xmlnode, 'presentationTime', self.presentation_time)
         write_attr_value(xmlnode, 'duration', self.duration)
         write_attr_value(xmlnode, 'id', self.id)
+        write_child_node(xmlnode, 'scte35:Signal', self.signal)
 
 
 class Descriptor(XMLNode):
@@ -642,6 +645,25 @@ class EventStream(XMLNode):
         write_attr_value(xmlnode, 'timescale', self.timescale)
 
         write_child_node(xmlnode, 'Event', self.events)
+
+# scte-35 signal element
+class Signal(XMLNode):
+    def __init__(self):
+        self.namespace = "scte35"
+        self.binary = None
+
+    def write(self, xmlnode):
+        write_child_node(xmlnode, '%s:Binary' % self.namespace, self.binary)
+
+
+class Binary(XMLNode):
+    def __init__(self):
+        self.namespace = "scte35"
+        self.binary_value = None
+
+    def write(self, xmlnode):
+        write_node_value(xmlnode, self.binary_value)
+
 
 
 class Period(XMLNode):
